@@ -2,6 +2,14 @@
   "name": "pi-v4-jspace",
   "version": "1.0.0",
   "description": "DeepSeek V4 Minimal Anchor + J-Space runtime integration for Pi",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/banyueban/pi-v4-jspace.git"
+  },
+  "homepage": "https://github.com/banyueban/pi-v4-jspace#readme",
+  "bugs": {
+    "url": "https://github.com/banyueban/pi-v4-jspace/issues"
+  },
   "type": "module",
   "license": "MIT",
   "keywords": [
