@@ -1,0 +1,9 @@
+{
+  "name": "J-Space-Cognition-Suite",
+  "version": "3.6",
+  "repository": "https://github.com/Tiger3807861189/J-Space-Cognition-Suite-V3.6",
+  "commit": "bd319d8a86d176ee12adb7bba5c3dae716a768a0",
+  "license": "Apache-2.0",
+  "vendoredAt": "2026-08-18",
+  "notes": "skills/j-space is an exact snapshot of upstream j-space/ (SKILL.md, modules/, references/, scripts/). Do not modify vendored content; bump via a dedicated dependency update."
+}

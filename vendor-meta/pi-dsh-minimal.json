@@ -1,0 +1,9 @@
+{
+  "name": "pi-dsh-minimal",
+  "version": "0.4.1",
+  "repository": "https://github.com/Averyyy/pi-dsh-minimal",
+  "commit": "2ba59c1144fa99b1ba4e17c9f8ce2cee27295036",
+  "license": "MIT",
+  "purpose": "DeepSeek V4 anchored-standard adapter baseline; src/anchor/ and src/dsh/ in this package are ported from its verified adapter/tool implementation",
+  "portedAt": "2026-08-18"
+}
