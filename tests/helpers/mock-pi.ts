@@ -2,7 +2,10 @@
  * Test doubles for the pi ExtensionAPI surface used by pi-v4-jspace.
  * Kept minimal: only the members the extension actually calls.
  */
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type {
+	ExtensionAPI,
+	ExtensionContext,
+} from "@earendil-works/pi-coding-agent";
 
 export interface MockEntry {
 	type: string;
@@ -36,11 +39,16 @@ export interface MockPiState {
 export interface MockPi {
 	pi: ExtensionAPI;
 	state: MockPiState;
-	handlers: Record<string, ((event: unknown, ctx: ExtensionContext) => Promise<unknown> | unknown)[]>;
+	handlers: Record<
+		string,
+		((event: unknown, ctx: ExtensionContext) => Promise<unknown> | unknown)[]
+	>;
 	failSend: boolean;
 }
 
-export function createMockPi(overrides: { commands?: MockCommand[]; failSend?: boolean } = {}): MockPi {
+export function createMockPi(
+	overrides: { commands?: MockCommand[]; failSend?: boolean } = {},
+): MockPi {
 	const state: MockPiState = {
 		userMessages: [],
 		activeTools: [],
@@ -64,7 +72,10 @@ export function createMockPi(overrides: { commands?: MockCommand[]; failSend?: b
 	const handlers: MockPi["handlers"] = {};
 
 	const pi = {
-		on: (event: string, handler: (event: unknown, ctx: ExtensionContext) => unknown) => {
+		on: (
+			event: string,
+			handler: (event: unknown, ctx: ExtensionContext) => unknown,
+		) => {
 			if (!handlers[event]) handlers[event] = [];
 			handlers[event].push(handler);
 		},
@@ -93,7 +104,12 @@ export function createMockPi(overrides: { commands?: MockCommand[]; failSend?: b
 		getCommands: () => [...state.commands],
 	} as unknown as ExtensionAPI;
 
-	const mock: MockPi = { pi, state, handlers, failSend: overrides.failSend ?? false };
+	const mock: MockPi = {
+		pi,
+		state,
+		handlers,
+		failSend: overrides.failSend ?? false,
+	};
 	return mock;
 }
 
@@ -110,7 +126,10 @@ export interface MockContext {
 	cwd: string;
 	model: { id?: string; name?: string; provider?: string } | null;
 	hasUI: boolean;
-	ui: { setStatus: (key: string, text: string | undefined) => void; notify: () => void };
+	ui: {
+		setStatus: (key: string, text: string | undefined) => void;
+		notify: () => void;
+	};
 	sessionManager: {
 		getEntries: () => MockEntry[];
 		getBranch: () => MockEntry[];
@@ -120,12 +139,18 @@ export interface MockContext {
 	getSystemPrompt: () => string;
 }
 
-export function createMockContext(options: MockContextOptions = {}): MockContext {
+export function createMockContext(
+	options: MockContextOptions = {},
+): MockContext {
 	const entries = options.entries ?? [];
 	const ctx: MockContext = {
 		entries,
 		cwd: options.cwd ?? "E:/ai_dev/pi-v4-jspace",
-		model: options.model ?? { id: "deepseek-v4-pro-0813", name: "DeepSeek V4 Pro", provider: "custom" },
+		model: options.model ?? {
+			id: "deepseek-v4-pro-0813",
+			name: "DeepSeek V4 Pro",
+			provider: "custom",
+		},
 		hasUI: options.hasUI ?? false,
 		ui: {
 			setStatus: (_key: string, _text: string | undefined) => {
@@ -157,7 +182,11 @@ export async function fire(
 }
 
 /** 模拟一次真实 tool call：session 里先出现 assistant-with-toolCall，再触发 tool_call 事件。 */
-export async function fireToolCall(mock: MockPi, ctx: MockContext, toolName = "bash"): Promise<void> {
+export async function fireToolCall(
+	mock: MockPi,
+	ctx: MockContext,
+	toolName = "bash",
+): Promise<void> {
 	ctx.entries.push({
 		type: "message",
 		message: {
@@ -165,27 +194,45 @@ export async function fireToolCall(mock: MockPi, ctx: MockContext, toolName = "b
 			content: [{ type: "toolCall", toolName }],
 		},
 	});
-	await fire(mock, "tool_call", { toolName, toolCallId: "call_1", input: {} }, ctx);
+	await fire(
+		mock,
+		"tool_call",
+		{ toolName, toolCallId: "call_1", input: {} },
+		ctx,
+	);
 }
 
 /** 触发一次 compaction（event + session entry）。 */
-export async function fireCompact(mock: MockPi, ctx: MockContext): Promise<void> {
+export async function fireCompact(
+	mock: MockPi,
+	ctx: MockContext,
+): Promise<void> {
 	ctx.entries.push({ type: "compaction" });
 	await fire(mock, "session_compact", { reason: "manual" }, ctx);
 }
 
 /** 标准 chat-completions 风格 payload。 */
-export function chatPayload(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+export function chatPayload(
+	overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
 	return {
 		model: "deepseek-v4-pro-0813",
 		messages: [
-			{ role: "system", content: "You are Pi, an expert coding assistant with many tools and AGENTS.md context." },
+			{
+				role: "system",
+				content:
+					"You are Pi, an expert coding assistant with many tools and AGENTS.md context.",
+			},
 			{ role: "user", content: "hi" },
 		],
 		tools: [
 			{
 				type: "function",
-				function: { name: "read", description: "Read a file", parameters: { type: "object", properties: {} } },
+				function: {
+					name: "read",
+					description: "Read a file",
+					parameters: { type: "object", properties: {} },
+				},
 			},
 		],
 		...overrides,
@@ -193,7 +240,9 @@ export function chatPayload(overrides: Record<string, unknown> = {}): Record<str
 }
 
 export function chatSystemPromptPayload(): Record<string, unknown> {
-	return chatPayload({ system: "You are Pi, an expert coding assistant with many tools." });
+	return chatPayload({
+		system: "You are Pi, an expert coding assistant with many tools.",
+	});
 }
 
 /** before_agent_start 事件的最小 systemPromptOptions。 */
@@ -205,11 +254,22 @@ export function agentStartEvent(prompt = "重构下载模块，实现断点续�
 		systemPromptOptions: {
 			customPrompt: undefined,
 			selectedTools: ["read", "bash", "edit", "write", "grep"],
-			toolSnippets: { read: "Read file contents", bash: "Execute bash commands", edit: "Edit files", write: "Write files", grep: "Search" },
+			toolSnippets: {
+				read: "Read file contents",
+				bash: "Execute bash commands",
+				edit: "Edit files",
+				write: "Write files",
+				grep: "Search",
+			},
 			promptGuidelines: ["Use read to examine files instead of cat or sed."],
 			appendSystemPrompt: undefined,
 			cwd: "E:/ai_dev/pi-v4-jspace",
-			contextFiles: [{ path: "E:/ai_dev/pi-v4-jspace/AGENTS.md", content: "project instructions" }],
+			contextFiles: [
+				{
+					path: "E:/ai_dev/pi-v4-jspace/AGENTS.md",
+					content: "project instructions",
+				},
+			],
 			skills: [
 				{
 					name: "j-space",

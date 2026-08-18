@@ -1,7 +1,12 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { Text } from "@earendil-works/pi-tui";
-import { BASH_COMMAND_DESCRIPTION, DEFAULT_BASH_TIMEOUT_MS, DEFAULT_MAX_OUTPUT_CHARS, MINIMAL_BASH_DESCRIPTION } from "../dsh/official";
+import {
+	BASH_COMMAND_DESCRIPTION,
+	DEFAULT_BASH_TIMEOUT_MS,
+	DEFAULT_MAX_OUTPUT_CHARS,
+	MINIMAL_BASH_DESCRIPTION,
+} from "../dsh/official";
 import type { AdapterState } from "../state";
 
 const BASH_PARAMETERS = Type.Object({
@@ -23,7 +28,10 @@ function parseBashParams(params: unknown): BashParams {
 	return { command };
 }
 
-export function registerDshBashTool(pi: ExtensionAPI, state: AdapterState): void {
+export function registerDshBashTool(
+	pi: ExtensionAPI,
+	state: AdapterState,
+): void {
 	pi.registerTool({
 		name: "bash",
 		label: "bash",
@@ -49,7 +57,8 @@ export function registerDshBashTool(pi: ExtensionAPI, state: AdapterState): void
 		renderResult(result, { expanded }, theme) {
 			if (!expanded) return new Text("", 0, 0);
 			const textContent = result.content.find((item) => item.type === "text");
-			const output = textContent && textContent.type === "text" ? textContent.text : "";
+			const output =
+				textContent && textContent.type === "text" ? textContent.text : "";
 			if (!output) return new Text("", 0, 0);
 			return new Text(`\n${theme.fg("toolOutput", output)}`, 0, 0);
 		},

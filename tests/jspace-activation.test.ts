@@ -6,9 +6,18 @@
  * and parallel tool calls add zero activations.
  */
 import { describe, expect, it } from "vitest";
-import { createMockContext, createMockPi, fire, fireToolCall, agentStartEvent } from "./helpers/mock-pi";
+import {
+	createMockContext,
+	createMockPi,
+	fire,
+	fireToolCall,
+	agentStartEvent,
+} from "./helpers/mock-pi";
 import v4JSpace from "../src/index";
-import { buildNormalActivation, buildResumeActivation } from "../src/jspace/activation";
+import {
+	buildNormalActivation,
+	buildResumeActivation,
+} from "../src/jspace/activation";
 import type { MockEntry } from "./helpers/mock-pi";
 
 async function startV4Session(entries: MockEntry[] = []) {
@@ -58,8 +67,24 @@ describe("J-Space activation via tool call", () => {
 		const { mock, ctx } = await startV4Session();
 		await fire(mock, "before_agent_start", agentStartEvent("回答一个问题"), ctx);
 		// assistant 只输出文字，无 tool call
-		ctx.entries.push({ type: "message", message: { role: "assistant", content: [{ type: "text", text: "答案是 42" }] } });
-		await fire(mock, "message_end", { message: { role: "assistant", content: [{ type: "text", text: "答案是 42" }] } }, ctx);
+		ctx.entries.push({
+			type: "message",
+			message: {
+				role: "assistant",
+				content: [{ type: "text", text: "答案是 42" }],
+			},
+		});
+		await fire(
+			mock,
+			"message_end",
+			{
+				message: {
+					role: "assistant",
+					content: [{ type: "text", text: "答案是 42" }],
+				},
+			},
+			ctx,
+		);
 		expect(mock.state.userMessages).toHaveLength(0);
 
 		// 用户随后发出真实工程任务 → 第一次 tool call → 激活
@@ -79,9 +104,19 @@ describe("J-Space activation via tool call", () => {
 				{ role: "system", content: "You are Pi..." },
 				{ role: "user", content: "hi" },
 			],
-			tools: [{ type: "function", function: { name: "read", description: "Read", parameters: {} } }],
+			tools: [
+				{
+					type: "function",
+					function: { name: "read", description: "Read", parameters: {} },
+				},
+			],
 		};
-		const result = (await fire(mock, "before_provider_request", { payload }, ctx)) as Record<string, unknown> | undefined;
+		const result = (await fire(
+			mock,
+			"before_provider_request",
+			{ payload },
+			ctx,
+		)) as Record<string, unknown> | undefined;
 		// handler 返回值被 mock 忽略；改从 payload 行为验证：promoted 时 rewriteTools=false
 		// 直接检查 rewriteProviderRequest 语义已由 anchor.test 覆盖；这里验证状态
 		expect(result).toBeUndefined();

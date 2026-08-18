@@ -50,9 +50,13 @@ describe("runDoctor", () => {
 		runtime.jspace.available = false;
 
 		const result = runDoctor(mock.pi, runtime);
-		const skillCheck = result.checks.find((check) => check.label === "J-Space skill command available")!;
+		const skillCheck = result.checks.find(
+			(check) => check.label === "J-Space skill command available",
+		)!;
 		expect(skillCheck.ok).toBe(false);
-		expect(formatDoctor(result)).toContain("[ERROR] J-Space skill command available");
+		expect(formatDoctor(result)).toContain(
+			"[ERROR] J-Space skill command available",
+		);
 	});
 
 	it("warns (not errors) when thinking is not max", async () => {
@@ -66,14 +70,19 @@ describe("runDoctor", () => {
 		runtime.actualThinking = "high";
 
 		const result = runDoctor(mock.pi, runtime);
-		const thinkingCheck = result.checks.find((check) => check.label === "Thinking = max")!;
+		const thinkingCheck = result.checks.find(
+			(check) => check.label === "Thinking = max",
+		)!;
 		expect(thinkingCheck.ok).toBe(false);
 		expect(thinkingCheck.warn).toBe(true);
 	});
 
 	it("non-matched model reports model check but keeps everything else running", async () => {
 		const mock = createMockPi();
-		const ctx = createMockContext({ model: { id: "claude-sonnet-4", provider: "anthropic" }, entries: [] });
+		const ctx = createMockContext({
+			model: { id: "claude-sonnet-4", provider: "anthropic" },
+			entries: [],
+		});
 		v4JSpace(mock.pi);
 		await fire(mock, "session_start", { reason: "startup" }, ctx);
 
@@ -82,8 +91,14 @@ describe("runDoctor", () => {
 		runtime.actualThinking = "max";
 
 		const result = runDoctor(mock.pi, runtime);
-		expect(result.checks.find((check) => check.label === "DeepSeek V4 model matched")!.ok).toBe(false);
-		expect(result.checks.find((check) => check.label === "Package extension loaded")!.ok).toBe(true);
+		expect(
+			result.checks.find((check) => check.label === "DeepSeek V4 model matched")!
+				.ok,
+		).toBe(false);
+		expect(
+			result.checks.find((check) => check.label === "Package extension loaded")!
+				.ok,
+		).toBe(true);
 	});
 });
 

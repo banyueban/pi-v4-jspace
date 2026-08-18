@@ -13,9 +13,19 @@ import { formatDoctor, runDoctor } from "./doctor";
 const V4J_USAGE =
 	"Usage: /v4j, /v4j status, /v4j on, /v4j off, /v4j reanchor, /v4j doctor, /v4j dump on|off";
 
-const V4J_COMPLETIONS = ["status", "on", "off", "reanchor", "doctor", "dump"] as const;
+const V4J_COMPLETIONS = [
+	"status",
+	"on",
+	"off",
+	"reanchor",
+	"doctor",
+	"dump",
+] as const;
 
-export function formatStatusText(runtime: RuntimeState, modelLabel: string): string {
+export function formatStatusText(
+	runtime: RuntimeState,
+	modelLabel: string,
+): string {
 	const activated = runtime.jspace.activatedCompactionSeq !== null;
 	return [
 		`pi-v4-jspace ${runtimeVersion()}`,
@@ -45,16 +55,21 @@ function runtimeVersion(): string {
 	return "1.0.0";
 }
 
-export function registerV4JCommand(pi: ExtensionAPI, runtime: RuntimeState): void {
+export function registerV4JCommand(
+	pi: ExtensionAPI,
+	runtime: RuntimeState,
+): void {
 	pi.registerCommand("v4j", {
 		description: "DeepSeek V4 Minimal Anchor + J-Space runtime (pi-v4-jspace)",
 		getArgumentCompletions: (prefix) => {
 			const trimmed = prefix.trim().toLowerCase();
 			const [head] = trimmed.split(/\s+/, 1);
-			return V4J_COMPLETIONS.filter((item) => item.startsWith(head ?? "")).map((value) => ({
-				label: value,
-				value,
-			}));
+			return V4J_COMPLETIONS.filter((item) => item.startsWith(head ?? "")).map(
+				(value) => ({
+					label: value,
+					value,
+				}),
+			);
 		},
 		handler: async (args, ctx) => {
 			// 命令执行时重新读配置，保证外部修改可见
@@ -77,7 +92,10 @@ export function registerV4JCommand(pi: ExtensionAPI, runtime: RuntimeState): voi
 				}
 				syncAdapter(pi, ctx, runtime);
 				applyStatus(ctx, runtime);
-				ctx.ui.notify(`pi-v4-jspace ${head === "on" ? "enabled" : "disabled"}`, "info");
+				ctx.ui.notify(
+					`pi-v4-jspace ${head === "on" ? "enabled" : "disabled"}`,
+					"info",
+				);
 				return;
 			}
 
@@ -102,7 +120,10 @@ export function registerV4JCommand(pi: ExtensionAPI, runtime: RuntimeState): voi
 					timestamp: Date.now(),
 				});
 				applyStatus(ctx, runtime);
-				ctx.ui.notify("pi-v4-jspace re-anchored: next tool call promotes and re-activates J-Space", "info");
+				ctx.ui.notify(
+					"pi-v4-jspace re-anchored: next tool call promotes and re-activates J-Space",
+					"info",
+				);
 				return;
 			}
 

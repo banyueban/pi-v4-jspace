@@ -8,20 +8,18 @@ import type { RuntimeState } from "./state";
 
 export const STATUS_KEY = "v4j";
 
-export function renderStatus(
-	runtime: {
-		enabled: boolean;
-		matchedModel: boolean;
-		phase: { profile: "inactive" | "pro"; promoted: boolean };
-		jspace: {
-			available: boolean;
-			activationPending: boolean;
-			resumeRequired: boolean;
-			lastActivationError?: string;
-		};
-		actualThinking?: string;
-	},
-): string | undefined {
+export function renderStatus(runtime: {
+	enabled: boolean;
+	matchedModel: boolean;
+	phase: { profile: "inactive" | "pro"; promoted: boolean };
+	jspace: {
+		available: boolean;
+		activationPending: boolean;
+		resumeRequired: boolean;
+		lastActivationError?: string;
+	};
+	actualThinking?: string;
+}): string | undefined {
 	if (!runtime.enabled || !runtime.matchedModel) return undefined;
 	if (runtime.phase.profile === "inactive") return undefined;
 
@@ -32,17 +30,15 @@ export function renderStatus(
 	return base;
 }
 
-function statusBase(
-	runtime: {
-		phase: { profile: "inactive" | "pro"; promoted: boolean };
-		jspace: {
-			available: boolean;
-			activationPending: boolean;
-			resumeRequired: boolean;
-			lastActivationError?: string;
-		};
-	},
-): string {
+function statusBase(runtime: {
+	phase: { profile: "inactive" | "pro"; promoted: boolean };
+	jspace: {
+		available: boolean;
+		activationPending: boolean;
+		resumeRequired: boolean;
+		lastActivationError?: string;
+	};
+}): string {
 	const degraded = runtime.jspace.lastActivationError !== undefined;
 	if (degraded) return "v4j degraded";
 
@@ -63,7 +59,10 @@ function statusBase(
 	return "v4j promoted • jspace";
 }
 
-export function applyStatus(ctx: ExtensionContext, runtime: RuntimeState): void {
+export function applyStatus(
+	ctx: ExtensionContext,
+	runtime: RuntimeState,
+): void {
 	try {
 		if (!ctx.hasUI) return;
 		if (!runtime.config.statusLine) {

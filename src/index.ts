@@ -10,21 +10,37 @@
  * Non-matched models are completely untouched (G-003).
  */
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type {
+	ExtensionAPI,
+	ExtensionContext,
+} from "@earendil-works/pi-coding-agent";
 import { readV4JSpaceConfig } from "./config";
 import { createRuntimeState, type RuntimeState } from "./state";
 import { applyStatus } from "./status";
 import { resolveAdapterProfile } from "./anchor/profile";
 import { syncAdapter } from "./anchor/activation";
-import { extractRequestSurface, rewriteProviderRequest } from "./anchor/payload-rewrite";
-import { composeAnchoredPrompt, promptResourcesFrom, toolResourcesFromLiveTools } from "./anchor/prompt";
+import {
+	extractRequestSurface,
+	rewriteProviderRequest,
+} from "./anchor/payload-rewrite";
+import {
+	composeAnchoredPrompt,
+	promptResourcesFrom,
+	toolResourcesFromLiveTools,
+} from "./anchor/prompt";
 import { scanSessionPhase } from "./anchor/promotion";
 import { emptyPromptResources } from "./anchor/prompt";
 import { emptySessionPhase } from "./anchor/state";
 import { registerStrReplaceEditorTool } from "./anchor/tools/str-replace-editor";
 import { discoverJSpaceSkill } from "./jspace/discovery";
-import { queueJSpaceActivation, cancelPendingActivation } from "./jspace/manager";
-import { persistV4JSpaceState, restoreV4JSpaceState } from "./jspace/persistence";
+import {
+	queueJSpaceActivation,
+	cancelPendingActivation,
+} from "./jspace/manager";
+import {
+	persistV4JSpaceState,
+	restoreV4JSpaceState,
+} from "./jspace/persistence";
 import { registerV4JCommand } from "./commands/command";
 import { appendRequestDump, resolveDumpPath } from "./diagnostics/request-dump";
 
@@ -40,9 +56,14 @@ function sessionEntries(ctx: ExtensionContext) {
 	}
 }
 
-function refreshPhase(pi: ExtensionAPI, ctx: ExtensionContext, runtime: RuntimeState): void {
+function refreshPhase(
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	runtime: RuntimeState,
+): void {
 	const scan = scanSessionPhase(sessionEntries(ctx), runtime.config.promotion);
-	if (scan.firstUserText && !runtime.phase.firstUserText) runtime.phase.firstUserText = scan.firstUserText;
+	if (scan.firstUserText && !runtime.phase.firstUserText)
+		runtime.phase.firstUserText = scan.firstUserText;
 	runtime.phase.userRounds = Math.max(runtime.phase.userRounds, scan.userRounds);
 	runtime.phase.hasAssistant = runtime.phase.hasAssistant || scan.hasAssistant;
 	runtime.phase.hasTool = runtime.phase.hasTool || scan.hasTool;
@@ -62,11 +83,15 @@ function composeCurrentPrompt(
 ): string {
 	// Promote 时从 live catalog 刷新 tools-guide：bootstrap 快照可能只有稀疏
 	// toolSnippets，导致 re-anchored guide 渲染 "(none)"（上游已验证的修复）。
-	const liveResources = runtime.phase.promoted ? toolResourcesFromLiveTools(pi.getAllTools()) : {};
+	const liveResources = runtime.phase.promoted
+		? toolResourcesFromLiveTools(pi.getAllTools())
+		: {};
 	return composeAnchoredPrompt({
 		...runtime.promptResources,
 		...liveResources,
-		selectedTools: runtime.phase.promoted ? pi.getActiveTools() : runtime.promptResources.selectedTools,
+		selectedTools: runtime.phase.promoted
+			? pi.getActiveTools()
+			: runtime.promptResources.selectedTools,
 		includeWorkspace: runtime.phase.promoted,
 		assembledPrompt,
 	});
@@ -79,10 +104,16 @@ function noteUserText(runtime: RuntimeState, text: string | undefined): void {
 	if (runtime.phase.userRounds === 0) runtime.phase.userRounds = 1;
 }
 
-function noteAssistant(runtime: RuntimeState, message: AgentMessage | undefined): void {
+function noteAssistant(
+	runtime: RuntimeState,
+	message: AgentMessage | undefined,
+): void {
 	if (!message || message.role !== "assistant") return;
 	runtime.phase.hasAssistant = true;
-	if (Array.isArray(message.content) && message.content.some((part) => part?.type === "toolCall")) {
+	if (
+		Array.isArray(message.content) &&
+		message.content.some((part) => part?.type === "toolCall")
+	) {
 		runtime.phase.hasTool = true;
 	}
 }
@@ -176,12 +207,15 @@ export default function v4JSpace(pi: ExtensionAPI) {
 		// before_provider_request，避免抹掉其他扩展的追加（TDD §18）
 		runtime.promptResources = promptResourcesFrom(event.systemPromptOptions);
 		if (!runtime.phase.promoted) return undefined;
-		return { systemPrompt: composeCurrentPrompt(pi, runtime, event.systemPrompt) };
+		return {
+			systemPrompt: composeCurrentPrompt(pi, runtime, event.systemPrompt),
+		};
 	});
 
 	pi.on("message_end", async (event, ctx) => {
 		noteAssistant(runtime, event.message);
-		if (runtime.phase.hasAssistant || runtime.phase.hasTool) refreshPhase(pi, ctx, runtime);
+		if (runtime.phase.hasAssistant || runtime.phase.hasTool)
+			refreshPhase(pi, ctx, runtime);
 	});
 
 	pi.on("tool_call", async (_event, ctx) => {
@@ -205,7 +239,8 @@ export default function v4JSpace(pi: ExtensionAPI) {
 		refreshPhase(pi, ctx, runtime);
 		if (runtime.phase.profile === "inactive") return undefined;
 
-		const assembled = extractRequestSurface(event.payload).system ?? ctx.getSystemPrompt();
+		const assembled =
+			extractRequestSurface(event.payload).system ?? ctx.getSystemPrompt();
 		const rewritten = rewriteProviderRequest(event.payload, {
 			persona: composeCurrentPrompt(pi, runtime, assembled),
 			// Bootstrap：payload 级重写为 DSH 两工具；Promoted：恢复原样（G-008）
@@ -220,7 +255,8 @@ export default function v4JSpace(pi: ExtensionAPI) {
 				matched: runtime.matchedModel,
 				anchorPhase: runtime.phase.promoted ? "promoted" : "bootstrap",
 				compactionSeq: runtime.phase.compactionSeq,
-				jspaceActivated: runtime.jspace.activatedCompactionSeq === runtime.phase.compactionSeq,
+				jspaceActivated:
+					runtime.jspace.activatedCompactionSeq === runtime.phase.compactionSeq,
 				system: surface.system,
 				tools: surface.toolNames,
 			});

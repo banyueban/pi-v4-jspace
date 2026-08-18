@@ -1,4 +1,8 @@
-import { getDocsPath, getExamplesPath, getReadmePath } from "@earendil-works/pi-coding-agent";
+import {
+	getDocsPath,
+	getExamplesPath,
+	getReadmePath,
+} from "@earendil-works/pi-coding-agent";
 import { MINIMAL_PROMPT } from "./dsh/official";
 
 /** First paragraph of Pi's default system prompt. Restoring this breaks the Pro anchor. */
@@ -49,7 +53,8 @@ export function toolResourcesFromLiveTools(
 		if (!tool || !tool.name) continue;
 		if (tool.description) toolSnippets[tool.name] = tool.description;
 		for (const guideline of tool.promptGuidelines ?? []) {
-			if (guideline && !promptGuidelines.includes(guideline)) promptGuidelines.push(guideline);
+			if (guideline && !promptGuidelines.includes(guideline))
+				promptGuidelines.push(guideline);
 		}
 	}
 	return { toolSnippets, promptGuidelines };
@@ -70,15 +75,19 @@ export function emptyPromptResources(): PromptResources {
 	return {};
 }
 
-export function promptResourcesFrom(options: {
-	contextFiles?: readonly PromptContextFile[];
-	skills?: readonly PromptSkill[];
-	appendSystemPrompt?: string;
-	selectedTools?: readonly string[];
-	toolSnippets?: Readonly<Record<string, string>>;
-	promptGuidelines?: readonly string[];
-	cwd?: string;
-} | undefined): PromptResources {
+export function promptResourcesFrom(
+	options:
+		| {
+				contextFiles?: readonly PromptContextFile[];
+				skills?: readonly PromptSkill[];
+				appendSystemPrompt?: string;
+				selectedTools?: readonly string[];
+				toolSnippets?: Readonly<Record<string, string>>;
+				promptGuidelines?: readonly string[];
+				cwd?: string;
+		  }
+		| undefined,
+): PromptResources {
 	if (!options) return emptyPromptResources();
 	return {
 		contextFiles: options.contextFiles,
@@ -111,7 +120,8 @@ export function isAnchoredSystemPrompt(value: string | undefined): boolean {
 export function reanchorPersona(system: string): string {
 	const text = system.replace(/^\uFEFF?[\s\n]*/, "");
 	if (text.startsWith(MINIMAL_PROMPT)) return text;
-	if (text.startsWith(PI_IDENTITY)) return MINIMAL_PROMPT + text.slice(PI_IDENTITY.length);
+	if (text.startsWith(PI_IDENTITY))
+		return MINIMAL_PROMPT + text.slice(PI_IDENTITY.length);
 	if (text.length === 0) return MINIMAL_PROMPT;
 	return `${MINIMAL_PROMPT}\n\n${text}`;
 }
@@ -121,17 +131,27 @@ export function reanchorPersona(system: string): string {
  * After promotion, reanchor the assembled Pi/extension prompt and add
  * workspace + tools-guide + docs only when they are not already there.
  */
-export function composeAnchoredPrompt(options: ComposeAnchoredPromptOptions = {}): string {
+export function composeAnchoredPrompt(
+	options: ComposeAnchoredPromptOptions = {},
+): string {
 	if (!options.includeWorkspace) return MINIMAL_PROMPT;
 	const assembled = options.assembledPrompt?.trim();
-	const prompt = reanchorPersona(assembled && assembled.length > 0 ? assembled : MINIMAL_PROMPT);
+	const prompt = reanchorPersona(
+		assembled && assembled.length > 0 ? assembled : MINIMAL_PROMPT,
+	);
 	return ensurePromotedSurface(prompt, options);
 }
 
 /** Add Pi workspace / tools-guide / docs when a reanchored prompt lacks them. */
-export function ensurePromotedSurface(system: string, resources: PromptResources = {}): string {
+export function ensurePromotedSurface(
+	system: string,
+	resources: PromptResources = {},
+): string {
 	let text = system;
-	if (!/\nAvailable tools:/.test(`\n${text}`) && !text.includes("Available tools:")) {
+	if (
+		!/\nAvailable tools:/.test(`\n${text}`) &&
+		!text.includes("Available tools:")
+	) {
 		text += formatToolsGuide(resources);
 	}
 	if (!text.includes("Pi documentation")) {
@@ -156,7 +176,9 @@ export function formatToolsGuide(resources: PromptResources): string {
 	const snippets = resources.toolSnippets ?? {};
 	const visible = tools.filter((name) => snippets[name]);
 	const toolsList =
-		visible.length > 0 ? visible.map((name) => `- ${name}: ${snippets[name]}`).join("\n") : "(none)";
+		visible.length > 0
+			? visible.map((name) => `- ${name}: ${snippets[name]}`).join("\n")
+			: "(none)";
 	const guidelinesList: string[] = [];
 	const seen = new Set<string>();
 	const add = (guideline: string) => {
@@ -165,7 +187,12 @@ export function formatToolsGuide(resources: PromptResources): string {
 		guidelinesList.push(guideline);
 	};
 	const hasBash = tools.includes("bash");
-	if (hasBash && !tools.includes("grep") && !tools.includes("find") && !tools.includes("ls")) {
+	if (
+		hasBash &&
+		!tools.includes("grep") &&
+		!tools.includes("find") &&
+		!tools.includes("ls")
+	) {
 		add("Use bash for file operations like ls, rg, find");
 	}
 	for (const guideline of resources.promptGuidelines ?? []) {
@@ -203,7 +230,9 @@ Pi documentation (read only when the user asks about pi itself, its SDK, extensi
 }
 
 /** Match Pi `buildSystemPrompt` project_context markup. */
-export function formatProjectContext(files: readonly PromptContextFile[]): string {
+export function formatProjectContext(
+	files: readonly PromptContextFile[],
+): string {
 	if (files.length === 0) return "";
 	let section = "\n\n<project_context>\n\n";
 	section += "Project-specific instructions and guidelines:\n\n";

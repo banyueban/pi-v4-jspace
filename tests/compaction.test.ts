@@ -6,7 +6,14 @@
  * Total activations: 2. The second uses the long-gap recovery prompt.
  */
 import { describe, expect, it } from "vitest";
-import { createMockContext, createMockPi, fire, fireToolCall, fireCompact, agentStartEvent } from "./helpers/mock-pi";
+import {
+	createMockContext,
+	createMockPi,
+	fire,
+	fireToolCall,
+	fireCompact,
+	agentStartEvent,
+} from "./helpers/mock-pi";
 import v4JSpace from "../src/index";
 import { buildResumeActivation } from "../src/jspace/activation";
 import type { MockEntry } from "./helpers/mock-pi";
@@ -53,12 +60,20 @@ describe("compaction re-anchor cycle", () => {
 		await fire(mock, "before_agent_start", agentStartEvent(), ctx);
 
 		await fireToolCall(mock, ctx);
-		const stateEntries = mock.state.entries.filter((e) => e.customType === "pi-v4-jspace-state");
+		const stateEntries = mock.state.entries.filter(
+			(e) => e.customType === "pi-v4-jspace-state",
+		);
 		expect(stateEntries).toHaveLength(1);
-		expect(stateEntries[0]!.data).toMatchObject({ event: "activated", version: 1, compactionSeq: -1 });
+		expect(stateEntries[0]!.data).toMatchObject({
+			event: "activated",
+			version: 1,
+			compactionSeq: -1,
+		});
 
 		await fireCompact(mock, ctx);
-		const afterCompact = mock.state.entries.filter((e) => e.customType === "pi-v4-jspace-state");
+		const afterCompact = mock.state.entries.filter(
+			(e) => e.customType === "pi-v4-jspace-state",
+		);
 		expect(afterCompact).toHaveLength(2);
 		expect(afterCompact[1]!.data).toMatchObject({ event: "compacted" });
 	});

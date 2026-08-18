@@ -1,4 +1,7 @@
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type {
+	ExtensionAPI,
+	ExtensionContext,
+} from "@earendil-works/pi-coding-agent";
 import { createBashToolDefinition } from "@earendil-works/pi-coding-agent";
 import { resolveAdapterProfile, type AdapterProfile } from "./profile";
 import type { RuntimeState } from "../state";
@@ -14,19 +17,31 @@ import { MINIMAL_BASH_DESCRIPTION } from "./dsh/official";
 import { registerDshBashTool } from "./tools/bash";
 import { applyStatus } from "../status";
 
-export function desiredSurface(profile: AdapterProfile, promoted: boolean): ToolSurface {
+export function desiredSurface(
+	profile: AdapterProfile,
+	promoted: boolean,
+): ToolSurface {
 	if (profile === "inactive") return "off";
 	return promoted ? "promoted" : "bootstrap";
 }
 
-export function syncAdapter(pi: ExtensionAPI, ctx: ExtensionContext, state: RuntimeState): void {
+export function syncAdapter(
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	state: RuntimeState,
+): void {
 	const profile = resolveAdapterProfile(ctx, state.config);
 	state.phase.profile = profile;
 	const nextSurface = desiredSurface(profile, state.phase.promoted);
 	applySurface(pi, ctx, state, nextSurface);
 }
 
-function applySurface(pi: ExtensionAPI, ctx: ExtensionContext, state: RuntimeState, surface: ToolSurface): void {
+function applySurface(
+	pi: ExtensionAPI,
+	ctx: ExtensionContext,
+	state: RuntimeState,
+	surface: ToolSurface,
+): void {
 	if (surface === state.surface) {
 		if (surface === "off") deactivateOwnedTools(pi);
 		setStatus(ctx, state);
@@ -63,7 +78,9 @@ function leaveBootstrap(pi: ExtensionAPI, state: RuntimeState): void {
 		state.bashOverrideInstalled = false;
 	}
 	const previousToolNames =
-		state.previousToolNames && state.previousToolNames.length > 0 ? state.previousToolNames : DEFAULT_TOOL_NAMES;
+		state.previousToolNames && state.previousToolNames.length > 0
+			? state.previousToolNames
+			: DEFAULT_TOOL_NAMES;
 	pi.setActiveTools(restoreTools(previousToolNames, pi.getActiveTools()));
 }
 
@@ -101,7 +118,10 @@ function setStatus(ctx: ExtensionContext, state: RuntimeState): void {
 	applyStatus(ctx, state);
 }
 
-export function rememberPreviousTools(pi: ExtensionAPI, state: RuntimeState): void {
+export function rememberPreviousTools(
+	pi: ExtensionAPI,
+	state: RuntimeState,
+): void {
 	if (!state.previousToolNames || state.previousToolNames.length === 0) {
 		state.previousToolNames = stripOwnedTools(pi.getActiveTools());
 	}

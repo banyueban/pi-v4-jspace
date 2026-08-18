@@ -27,7 +27,11 @@ function vendoredSkillRoot(): string {
 function findPython(): string | undefined {
 	for (const candidate of ["python3", "python"]) {
 		try {
-			const probe = spawnSync(candidate, ["--version"], { encoding: "utf-8", timeout: 10_000, windowsHide: true });
+			const probe = spawnSync(candidate, ["--version"], {
+				encoding: "utf-8",
+				timeout: 10_000,
+				windowsHide: true,
+			});
 			if (probe.status === 0) return candidate;
 		} catch {
 			// try next
@@ -36,7 +40,10 @@ function findPython(): string | undefined {
 	return undefined;
 }
 
-export function runDoctor(pi: ExtensionAPI, runtime: RuntimeState): DoctorResult {
+export function runDoctor(
+	pi: ExtensionAPI,
+	runtime: RuntimeState,
+): DoctorResult {
 	const checks: DoctorResult["checks"] = [];
 
 	checks.push({
@@ -48,7 +55,9 @@ export function runDoctor(pi: ExtensionAPI, runtime: RuntimeState): DoctorResult
 	checks.push({
 		label: "DeepSeek V4 model matched",
 		ok: runtime.matchedModel,
-		detail: runtime.matchedModel ? "model id/name matches configured patterns" : "current model is not a matched DeepSeek V4 model",
+		detail: runtime.matchedModel
+			? "model id/name matches configured patterns"
+			: "current model is not a matched DeepSeek V4 model",
 	});
 
 	checks.push({
@@ -62,11 +71,15 @@ export function runDoctor(pi: ExtensionAPI, runtime: RuntimeState): DoctorResult
 	checks.push({
 		label: "J-Space skill command available",
 		ok: discovery.available,
-		detail: discovery.available ? `command: ${discovery.commandName}` : "skill command not discovered (package filtering?)",
+		detail: discovery.available
+			? `command: ${discovery.commandName}`
+			: "skill command not discovered (package filtering?)",
 	});
 
 	// 优先用 skill 实际加载路径，找不到再退回 vendored 路径
-	const skillRoot = discovery.path ? dirname(discovery.path) : vendoredSkillRoot();
+	const skillRoot = discovery.path
+		? dirname(discovery.path)
+		: vendoredSkillRoot();
 	const skillFile = join(skillRoot, "SKILL.md");
 	const modulesDir = join(skillRoot, "modules");
 	const verifySuite = join(skillRoot, "scripts", "verify_suite.py");
@@ -96,7 +109,9 @@ export function runDoctor(pi: ExtensionAPI, runtime: RuntimeState): DoctorResult
 	checks.push({
 		label: "Provider rewrite enabled",
 		ok: runtime.config.enabled,
-		detail: runtime.config.enabled ? "before_provider_request rewrite active when matched" : "disabled via config",
+		detail: runtime.config.enabled
+			? "before_provider_request rewrite active when matched"
+			: "disabled via config",
 	});
 
 	const result: DoctorResult = { checks };
@@ -108,7 +123,8 @@ export function runDoctor(pi: ExtensionAPI, runtime: RuntimeState): DoctorResult
 			label: "Python controller",
 			ok: true,
 			warn: true,
-			detail: "Python not found; J-Space controller is optional (dialogue ledger fallback works)",
+			detail:
+				"Python not found; J-Space controller is optional (dialogue ledger fallback works)",
 		});
 		return result;
 	}
@@ -146,7 +162,8 @@ export function formatDoctor(result: DoctorResult): string {
 	if (result.verifySuite) {
 		lines.push("");
 		lines.push(`verify_suite.py: ${result.verifySuite.ok ? "PASS" : "FAIL"}`);
-		if (result.verifySuite.output) lines.push(result.verifySuite.output.slice(0, 2000));
+		if (result.verifySuite.output)
+			lines.push(result.verifySuite.output.slice(0, 2000));
 	}
 	return lines.join("\n");
 }

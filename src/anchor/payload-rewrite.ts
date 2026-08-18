@@ -42,7 +42,11 @@ function rewriteTools(tools: unknown): unknown {
 	if (isObject(first) && "input_schema" in first) {
 		return exactAnthropicTools();
 	}
-	if (isObject(first) && typeof first.name === "string" && "parameters" in first) {
+	if (
+		isObject(first) &&
+		typeof first.name === "string" &&
+		"parameters" in first
+	) {
 		return exactNamedParameterTools();
 	}
 	return exactChatCompletionsTools();
@@ -51,7 +55,11 @@ function rewriteTools(tools: unknown): unknown {
 function rewriteInstructionContent(content: unknown, persona: string): unknown {
 	if (typeof content === "string") return persona;
 	if (!Array.isArray(content)) return persona;
-	if (content.length === 1 && isObject(content[0]) && content[0].type === "text") {
+	if (
+		content.length === 1 &&
+		isObject(content[0]) &&
+		content[0].type === "text"
+	) {
 		return [{ ...content[0], text: persona }];
 	}
 	return persona;
@@ -65,7 +73,10 @@ function rewriteMessages(messages: unknown, persona: string): unknown {
 		const role = message.role;
 		if (role !== "system" && role !== "developer") return message;
 		replaced = true;
-		return { ...message, content: rewriteInstructionContent(message.content, persona) };
+		return {
+			...message,
+			content: rewriteInstructionContent(message.content, persona),
+		};
 	});
 }
 
@@ -74,26 +85,40 @@ export interface RewriteOptions {
 	rewriteTools: boolean;
 }
 
-export function looksLikeSummarizationSystem(system: string | undefined): boolean {
+export function looksLikeSummarizationSystem(
+	system: string | undefined,
+): boolean {
 	return Boolean(system && /context summarization assistant/i.test(system));
 }
 
 export function looksLikeCompactionUser(text: string | undefined): boolean {
 	if (!text) return false;
-	return text.includes("<conversation>") && (text.includes("</conversation>") || text.includes("<previous-summary>"));
+	return (
+		text.includes("<conversation>") &&
+		(text.includes("</conversation>") || text.includes("<previous-summary>"))
+	);
 }
 
 /** Compaction / branch-summary calls share this hook; do not rewrite them. */
 export function isNonAgentProviderPayload(payload: unknown): boolean {
 	const surface = extractRequestSurface(payload);
-	return looksLikeSummarizationSystem(surface.system) || looksLikeCompactionUser(surface.lastUser);
+	return (
+		looksLikeSummarizationSystem(surface.system) ||
+		looksLikeCompactionUser(surface.lastUser)
+	);
 }
 
-export function rewriteProviderRequest(payload: unknown, options: RewriteOptions): unknown {
+export function rewriteProviderRequest(
+	payload: unknown,
+	options: RewriteOptions,
+): unknown {
 	if (!isObject(payload)) return payload;
 	if (isNonAgentProviderPayload(payload)) return payload;
 	const next: Record<string, unknown> = { ...payload };
-	if ("system" in next && (typeof next.system === "string" || Array.isArray(next.system))) {
+	if (
+		"system" in next &&
+		(typeof next.system === "string" || Array.isArray(next.system))
+	) {
 		next.system = rewriteInstructionContent(next.system, options.persona);
 	}
 	if ("instructions" in next && typeof next.instructions === "string") {
@@ -107,14 +132,19 @@ export function rewriteProviderRequest(payload: unknown, options: RewriteOptions
 }
 
 export function rewriteMinimalProviderRequest(payload: unknown): unknown {
-	return rewriteProviderRequest(payload, { persona: MINIMAL_PROMPT, rewriteTools: true });
+	return rewriteProviderRequest(payload, {
+		persona: MINIMAL_PROMPT,
+		rewriteTools: true,
+	});
 }
 
 function messageText(content: unknown): string {
 	if (typeof content === "string") return content;
 	if (!Array.isArray(content)) return "";
 	return content
-		.map((part) => (isObject(part) && typeof part.text === "string" ? part.text : ""))
+		.map((part) =>
+			isObject(part) && typeof part.text === "string" ? part.text : "",
+		)
 		.join("");
 }
 
@@ -128,12 +158,16 @@ export function extractRequestSurface(payload: unknown): {
 	if (!isObject(payload)) return { toolNames: [], tools: undefined };
 	let system: string | undefined;
 	if (typeof payload.system === "string") system = payload.system;
-	else if (typeof payload.instructions === "string") system = payload.instructions;
+	else if (typeof payload.instructions === "string")
+		system = payload.instructions;
 	if (system === undefined && Array.isArray(payload.messages)) {
 		const first = payload.messages.find(
-			(message) => isObject(message) && (message.role === "system" || message.role === "developer"),
+			(message) =>
+				isObject(message) &&
+				(message.role === "system" || message.role === "developer"),
 		);
-		if (isObject(first) && typeof first.content === "string") system = first.content;
+		if (isObject(first) && typeof first.content === "string")
+			system = first.content;
 	}
 	let lastUser: string | undefined;
 	if (Array.isArray(payload.messages)) {
@@ -162,13 +196,16 @@ export function extractRequestSurface(payload: unknown): {
 	const messageRoles: string[] = [];
 	if (Array.isArray(payload.messages)) {
 		for (const message of payload.messages) {
-			if (isObject(message) && typeof message.role === "string") messageRoles.push(message.role);
+			if (isObject(message) && typeof message.role === "string")
+				messageRoles.push(message.role);
 		}
 	}
 	return { system, toolNames, tools, lastUser, messageRoles };
 }
 
-export function countUserRounds(messages: readonly { role?: string; content?: unknown }[]): number {
+export function countUserRounds(
+	messages: readonly { role?: string; content?: unknown }[],
+): number {
 	let rounds = 0;
 	for (const message of messages) {
 		if (message.role !== "user") continue;
@@ -177,7 +214,11 @@ export function countUserRounds(messages: readonly { role?: string; content?: un
 			text ||
 			(Array.isArray(message.content)
 				? message.content
-						.map((part) => (part && typeof part === "object" && "text" in part ? String(part.text ?? "") : ""))
+						.map((part) =>
+							part && typeof part === "object" && "text" in part
+								? String(part.text ?? "")
+								: "",
+						)
 						.join(" ")
 				: "");
 		if (!extracted.trim()) continue;

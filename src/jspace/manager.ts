@@ -15,7 +15,10 @@ import type { RuntimeState } from "../state";
 import { buildNormalActivation, buildResumeActivation } from "./activation";
 import { persistV4JSpaceState } from "./persistence";
 
-export function queueJSpaceActivation(pi: ExtensionAPI, runtime: RuntimeState): void {
+export function queueJSpaceActivation(
+	pi: ExtensionAPI,
+	runtime: RuntimeState,
+): void {
 	if (!runtime.config.enabled) return;
 	if (!runtime.config.jspace.enabled) return;
 	if (!runtime.config.jspace.activateAfterPromotion) return;
@@ -27,7 +30,9 @@ export function queueJSpaceActivation(pi: ExtensionAPI, runtime: RuntimeState): 
 
 	runtime.jspace.activationPending = true;
 
-	const prompt = runtime.jspace.resumeRequired ? buildResumeActivation() : buildNormalActivation();
+	const prompt = runtime.jspace.resumeRequired
+		? buildResumeActivation()
+		: buildNormalActivation();
 
 	try {
 		pi.sendUserMessage(prompt, {
@@ -46,8 +51,11 @@ export function queueJSpaceActivation(pi: ExtensionAPI, runtime: RuntimeState): 
 		});
 	} catch (error) {
 		runtime.jspace.activationPending = false;
-		runtime.jspace.lastActivationError = error instanceof Error ? error.message : String(error);
-		console.warn(`[pi-v4-jspace] J-Space activation failed: ${runtime.jspace.lastActivationError}`);
+		runtime.jspace.lastActivationError =
+			error instanceof Error ? error.message : String(error);
+		console.warn(
+			`[pi-v4-jspace] J-Space activation failed: ${runtime.jspace.lastActivationError}`,
+		);
 	}
 }
 

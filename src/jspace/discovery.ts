@@ -23,7 +23,8 @@ export function discoverJSpaceSkill(pi: ExtensionAPI): JSpaceDiscovery {
 		const found = commands.find(
 			(command) =>
 				command.source === "skill" &&
-				(command.name === JSPACE_SKILL_COMMAND || command.name.startsWith(`${JSPACE_SKILL_COMMAND}:`)),
+				(command.name === JSPACE_SKILL_COMMAND ||
+					command.name.startsWith(`${JSPACE_SKILL_COMMAND}:`)),
 		);
 		if (!found) return { available: false };
 		return {

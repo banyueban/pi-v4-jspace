@@ -28,10 +28,15 @@ export function readSettingsShellPath(): string | undefined {
 	try {
 		const settingsPath = join(homedir(), ".pi", "agent", "settings.json");
 		if (!existsSync(settingsPath)) return undefined;
-		const parsed = JSON.parse(requireFs().readFileSync(settingsPath, "utf-8")) as unknown;
-		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return undefined;
+		const parsed = JSON.parse(
+			requireFs().readFileSync(settingsPath, "utf-8"),
+		) as unknown;
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+			return undefined;
 		const shellPath = (parsed as Record<string, unknown>).shellPath;
-		return typeof shellPath === "string" && shellPath.length > 0 ? shellPath : undefined;
+		return typeof shellPath === "string" && shellPath.length > 0
+			? shellPath
+			: undefined;
 	} catch {
 		return undefined;
 	}
@@ -50,7 +55,11 @@ function isLegacyWslBashPath(value: string): boolean {
 function findBashOnPath(): string | undefined {
 	try {
 		const probe = process.platform === "win32" ? "where" : "which";
-		const result = spawnSync(probe, ["bash.exe"], { encoding: "utf-8", timeout: 5000, windowsHide: true });
+		const result = spawnSync(probe, ["bash.exe"], {
+			encoding: "utf-8",
+			timeout: 5000,
+			windowsHide: true,
+		});
 		if (result.status === 0 && result.stdout) {
 			const firstMatch = result.stdout.trim().split(/\r?\n/)[0];
 			if (firstMatch && existsSync(firstMatch)) return firstMatch;
@@ -70,7 +79,8 @@ export function resolveBashExecutable(customShellPath?: string): ResolvedShell {
 				`[pi-v4-jspace] shellPath ${configured} is the WSL shim; the persistent bootstrap bash needs a real bash (Git Bash / Cygwin / MSYS2).`,
 			);
 		}
-		if (existsSync(configured)) return { executable: configured, via: "settings.json shellPath" };
+		if (existsSync(configured))
+			return { executable: configured, via: "settings.json shellPath" };
 		throw new Error(`[pi-v4-jspace] Custom shell path not found: ${configured}`);
 	}
 
@@ -80,9 +90,11 @@ export function resolveBashExecutable(customShellPath?: string): ResolvedShell {
 		const programFiles = process.env.ProgramFiles;
 		if (programFiles) candidates.push(`${programFiles}\\Git\\bin\\bash.exe`);
 		const programFilesX86 = process.env["ProgramFiles(x86)"];
-		if (programFilesX86) candidates.push(`${programFilesX86}\\Git\\bin\\bash.exe`);
+		if (programFilesX86)
+			candidates.push(`${programFilesX86}\\Git\\bin\\bash.exe`);
 		for (const candidate of candidates) {
-			if (existsSync(candidate)) return { executable: candidate, via: "Git Bash known location" };
+			if (existsSync(candidate))
+				return { executable: candidate, via: "Git Bash known location" };
 		}
 	}
 

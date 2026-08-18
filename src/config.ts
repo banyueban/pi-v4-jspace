@@ -68,7 +68,10 @@ function normalizePatternList(value: unknown, fallback: string[]): string[] {
 function normalizeJSpaceSection(value: unknown): JSpaceConfigSection {
 	if (!isObject(value)) return { ...DEFAULT_CONFIG.jspace };
 	return {
-		enabled: typeof value.enabled === "boolean" ? value.enabled : DEFAULT_CONFIG.jspace.enabled,
+		enabled:
+			typeof value.enabled === "boolean"
+				? value.enabled
+				: DEFAULT_CONFIG.jspace.enabled,
 		activateAfterPromotion:
 			typeof value.activateAfterPromotion === "boolean"
 				? value.activateAfterPromotion
@@ -80,19 +83,29 @@ function normalizeJSpaceSection(value: unknown): JSpaceConfigSection {
 	};
 }
 
-export function getV4JSpaceConfigPath(agentDir: string = getAgentDir()): string {
+export function getV4JSpaceConfigPath(
+	agentDir: string = getAgentDir(),
+): string {
 	return join(agentDir, V4JSPACE_CONFIG_BASENAME);
 }
 
-export function readV4JSpaceConfig(configPath: string = getV4JSpaceConfigPath()): V4JSpaceConfig {
+export function readV4JSpaceConfig(
+	configPath: string = getV4JSpaceConfigPath(),
+): V4JSpaceConfig {
 	if (!existsSync(configPath)) return cloneConfig(DEFAULT_CONFIG);
 
 	try {
 		const parsed = JSON.parse(readFileSync(configPath, "utf-8")) as unknown;
 		if (!isObject(parsed)) return cloneConfig(DEFAULT_CONFIG);
 		return {
-			enabled: typeof parsed.enabled === "boolean" ? parsed.enabled : DEFAULT_CONFIG.enabled,
-			modelPatterns: normalizePatternList(parsed.modelPatterns, DEFAULT_MODEL_PATTERNS),
+			enabled:
+				typeof parsed.enabled === "boolean"
+					? parsed.enabled
+					: DEFAULT_CONFIG.enabled,
+			modelPatterns: normalizePatternList(
+				parsed.modelPatterns,
+				DEFAULT_MODEL_PATTERNS,
+			),
 			thinking: parsed.thinking === "max" ? "max" : DEFAULT_CONFIG.thinking,
 			setThinkingOnModelSelect:
 				typeof parsed.setThinkingOnModelSelect === "boolean"
@@ -100,8 +113,14 @@ export function readV4JSpaceConfig(configPath: string = getV4JSpaceConfigPath())
 					: DEFAULT_CONFIG.setThinkingOnModelSelect,
 			promotion: normalizePromoteOn(parsed.promotion),
 			jspace: normalizeJSpaceSection(parsed.jspace),
-			statusLine: typeof parsed.statusLine === "boolean" ? parsed.statusLine : DEFAULT_CONFIG.statusLine,
-			debugDump: typeof parsed.debugDump === "boolean" ? parsed.debugDump : DEFAULT_CONFIG.debugDump,
+			statusLine:
+				typeof parsed.statusLine === "boolean"
+					? parsed.statusLine
+					: DEFAULT_CONFIG.statusLine,
+			debugDump:
+				typeof parsed.debugDump === "boolean"
+					? parsed.debugDump
+					: DEFAULT_CONFIG.debugDump,
 		};
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);

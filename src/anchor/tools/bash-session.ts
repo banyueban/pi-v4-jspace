@@ -36,12 +36,21 @@ function wrapCommand(command: string, marker: CommandMarkers): string {
 	return `printf '%s\\n' ${quoteForBash(marker.start)}; eval -- ${quoteForBash(command)}; __dsh_persistent_bash_status=$?; printf '%s%s\\n' ${quoteForBash(marker.end)} "$__dsh_persistent_bash_status"`;
 }
 
-function maybeTruncate(content: string, maxOutputChars: number, incomplete = false): string {
+function maybeTruncate(
+	content: string,
+	maxOutputChars: number,
+	incomplete = false,
+): string {
 	if (content.length <= maxOutputChars && !incomplete) return content;
-	return content.length <= maxOutputChars ? content + TRUNCATED_MESSAGE : content.slice(0, maxOutputChars) + TRUNCATED_MESSAGE;
+	return content.length <= maxOutputChars
+		? content + TRUNCATED_MESSAGE
+		: content.slice(0, maxOutputChars) + TRUNCATED_MESSAGE;
 }
 
-function appendStatusMarker(content: string, marker: string | undefined): string {
+function appendStatusMarker(
+	content: string,
+	marker: string | undefined,
+): string {
 	if (marker === undefined) return content;
 	return content.length === 0 ? marker : `${content}\n${marker}`;
 }
@@ -51,7 +60,10 @@ function resolveBashExecutablePath(): string {
 	return resolveBashExecutable().executable;
 }
 
-function parseCaptured(buffer: string, marker: CommandMarkers): { text: string; exitCode: number } | undefined {
+function parseCaptured(
+	buffer: string,
+	marker: CommandMarkers,
+): { text: string; exitCode: number } | undefined {
 	const end = buffer.lastIndexOf(marker.end);
 	if (end < 0) return undefined;
 	const statusMatch = /^(\d+)\r?\n?/.exec(buffer.slice(end + marker.end.length));
@@ -96,8 +108,14 @@ export class PersistentBashSession {
 		});
 	}
 
-	async exec(command: string, options: PersistentBashExecOptions = {}): Promise<string> {
-		const run = this.queue.then(() => this.execUnlocked(command, options), () => this.execUnlocked(command, options));
+	async exec(
+		command: string,
+		options: PersistentBashExecOptions = {},
+	): Promise<string> {
+		const run = this.queue.then(
+			() => this.execUnlocked(command, options),
+			() => this.execUnlocked(command, options),
+		);
 		this.queue = run.then(
 			() => undefined,
 			() => undefined,
@@ -105,8 +123,12 @@ export class PersistentBashSession {
 		return run;
 	}
 
-	private async execUnlocked(command: string, options: PersistentBashExecOptions): Promise<string> {
-		if (command.trim().length === 0) throw new Error("command must be a non-empty string");
+	private async execUnlocked(
+		command: string,
+		options: PersistentBashExecOptions,
+	): Promise<string> {
+		if (command.trim().length === 0)
+			throw new Error("command must be a non-empty string");
 		const timeoutMs = options.timeoutMs ?? DEFAULT_BASH_TIMEOUT_MS;
 		const maxOutputChars = options.maxOutputChars ?? DEFAULT_MAX_OUTPUT_CHARS;
 		const signal = options.signal;
@@ -123,9 +145,14 @@ export class PersistentBashSession {
 				this.buffer += chunk.toString("utf8");
 				const captured = parseCaptured(this.buffer, marker);
 				if (captured === undefined) return;
-				finish(() => resolve(renderCaptured(captured.text, captured.exitCode, maxOutputChars)));
+				finish(() =>
+					resolve(renderCaptured(captured.text, captured.exitCode, maxOutputChars)),
+				);
 			};
-			const onExit = (code: number | null, killedSignal: NodeJS.Signals | null) => {
+			const onExit = (
+				code: number | null,
+				killedSignal: NodeJS.Signals | null,
+			) => {
 				this.proc = undefined;
 				let markerText: string;
 				if (killedSignal !== null) {
@@ -149,7 +176,10 @@ export class PersistentBashSession {
 			};
 			const timeout = setTimeout(() => {
 				finish(async () => {
-					const partial = maybeTruncate(partialText(this.buffer, marker), maxOutputChars);
+					const partial = maybeTruncate(
+						partialText(this.buffer, marker),
+						maxOutputChars,
+					);
 					await this.reset("timeout");
 					resolve(
 						[
@@ -194,7 +224,8 @@ export class PersistentBashSession {
 	}
 
 	private async ensure(): Promise<ChildProcessWithoutNullStreams> {
-		if (this.proc && this.proc.exitCode === null && !this.proc.killed) return this.proc;
+		if (this.proc && this.proc.exitCode === null && !this.proc.killed)
+			return this.proc;
 		const executable = resolveBashExecutablePath();
 		// 找不到真实 bash 时快速失败（fail open）：工具报错，不悬挂等待超时
 		if (!existsSync(executable)) {
@@ -220,9 +251,15 @@ export class PersistentBashSession {
 	}
 }
 
-function renderCaptured(text: string, exitCode: number, maxOutputChars: number): string {
+function renderCaptured(
+	text: string,
+	exitCode: number,
+	maxOutputChars: number,
+): string {
 	const rendered = maybeTruncate(text, maxOutputChars);
-	return exitCode === 0 ? rendered : appendStatusMarker(rendered, `[exit code: ${exitCode}]`);
+	return exitCode === 0
+		? rendered
+		: appendStatusMarker(rendered, `[exit code: ${exitCode}]`);
 }
 
 function partialText(buffer: string, marker: CommandMarkers): string {
@@ -231,6 +268,8 @@ function partialText(buffer: string, marker: CommandMarkers): string {
 	return buffer.slice(startMarker + marker.start.length).replace(/^\r?\n/, "");
 }
 
-export function createPersistentBashSession(cwd: string): PersistentBashSession {
+export function createPersistentBashSession(
+	cwd: string,
+): PersistentBashSession {
 	return new PersistentBashSession(cwd);
 }

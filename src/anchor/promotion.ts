@@ -8,13 +8,23 @@ function extractTextContent(content: unknown): string {
 	return content
 		.map((part) => {
 			if (typeof part === "string") return part;
-			if (part && typeof part === "object" && "text" in part && typeof part.text === "string") return part.text;
+			if (
+				part &&
+				typeof part === "object" &&
+				"text" in part &&
+				typeof part.text === "string"
+			)
+				return part.text;
 			return "";
 		})
 		.join(" ");
 }
 
-export const PROMOTE_ON_VALUES = ["either", "tool-call", "assistant-message"] as const;
+export const PROMOTE_ON_VALUES = [
+	"either",
+	"tool-call",
+	"assistant-message",
+] as const;
 
 export interface PromotionScan {
 	promoted: boolean;
@@ -35,13 +45,19 @@ export function normalizePromoteOn(value: unknown): PromoteOn {
 	return "tool-call";
 }
 
-export function isPromoted(signals: { hasAssistant: boolean; hasTool: boolean }, promoteOn: PromoteOn): boolean {
+export function isPromoted(
+	signals: { hasAssistant: boolean; hasTool: boolean },
+	promoteOn: PromoteOn,
+): boolean {
 	if (promoteOn === "tool-call") return signals.hasTool;
 	if (promoteOn === "assistant-message") return signals.hasAssistant;
 	return signals.hasAssistant || signals.hasTool;
 }
 
-export function scanSessionPhase(entries: readonly SessionEntry[], promoteOn: PromoteOn): PromotionScan {
+export function scanSessionPhase(
+	entries: readonly SessionEntry[],
+	promoteOn: PromoteOn,
+): PromotionScan {
 	let lastCompactionIndex = -1;
 	for (let index = 0; index < entries.length; index++) {
 		if (entries[index]?.type === "compaction") lastCompactionIndex = index;
@@ -66,7 +82,12 @@ export function scanSessionPhase(entries: readonly SessionEntry[], promoteOn: Pr
 		if (role === "assistant") {
 			hasAssistant = true;
 			const content = entry.message.content;
-			if (Array.isArray(content) && content.some((part) => part && typeof part === "object" && part.type === "toolCall")) {
+			if (
+				Array.isArray(content) &&
+				content.some(
+					(part) => part && typeof part === "object" && part.type === "toolCall",
+				)
+			) {
 				hasTool = true;
 			}
 			continue;

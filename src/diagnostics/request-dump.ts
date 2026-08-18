@@ -35,6 +35,8 @@ export function appendRequestDump(path: string, entry: RequestDumpEntry): void {
 		appendFileSync(path, `${JSON.stringify(entry)}\n`, { encoding: "utf8" });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		console.warn(`[pi-v4-jspace] Failed to write request dump ${path}: ${message}`);
+		console.warn(
+			`[pi-v4-jspace] Failed to write request dump ${path}: ${message}`,
+		);
 	}
 }

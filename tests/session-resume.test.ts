@@ -5,7 +5,13 @@
  * re-activate on resume — until a new compaction epoch appears.
  */
 import { describe, expect, it } from "vitest";
-import { createMockContext, createMockPi, fire, fireToolCall, agentStartEvent } from "./helpers/mock-pi";
+import {
+	createMockContext,
+	createMockPi,
+	fire,
+	fireToolCall,
+	agentStartEvent,
+} from "./helpers/mock-pi";
 import v4JSpace from "../src/index";
 import type { MockEntry } from "./helpers/mock-pi";
 
@@ -15,13 +21,19 @@ function resumedSessionEntries(): MockEntry[] {
 		{ type: "message", message: { role: "user", content: "old task" } },
 		{
 			type: "message",
-			message: { role: "assistant", content: [{ type: "toolCall", toolName: "bash" }] },
+			message: {
+				role: "assistant",
+				content: [{ type: "toolCall", toolName: "bash" }],
+			},
 		},
 		{ type: "compaction" },
 		{ type: "message", message: { role: "user", content: "continue old task" } },
 		{
 			type: "message",
-			message: { role: "assistant", content: [{ type: "toolCall", toolName: "bash" }] },
+			message: {
+				role: "assistant",
+				content: [{ type: "toolCall", toolName: "bash" }],
+			},
 		},
 		{
 			type: "custom",
@@ -39,7 +51,12 @@ describe("session resume", () => {
 		v4JSpace(mock.pi);
 
 		// resume 一个已有 tool call 的 session：scanSessionPhase 恢复 promoted
-		await fire(mock, "session_start", { reason: "resume", previousSessionFile: "x.jsonl" }, ctx);
+		await fire(
+			mock,
+			"session_start",
+			{ reason: "resume", previousSessionFile: "x.jsonl" },
+			ctx,
+		);
 		expect(mock.state.userMessages).toHaveLength(0);
 
 		// 后续 tool call 也不会触发（epoch 未变）
@@ -59,7 +76,12 @@ describe("session resume", () => {
 		const mock2 = createMockPi();
 		const ctx2 = createMockContext({ entries });
 		v4JSpace(mock2.pi);
-		await fire(mock2, "session_start", { reason: "fork", previousSessionFile: "y.jsonl" }, ctx2);
+		await fire(
+			mock2,
+			"session_start",
+			{ reason: "fork", previousSessionFile: "y.jsonl" },
+			ctx2,
+		);
 		expect(mock2.state.userMessages).toHaveLength(0);
 	});
 

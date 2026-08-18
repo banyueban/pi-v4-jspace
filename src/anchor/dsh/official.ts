@@ -31,12 +31,14 @@ Notes for using the \`str_replace\` command:
 * The \`new_str\` parameter should contain the edited lines that should replace the \`old_str\`
 `.trim();
 
-export const BASH_COMMAND_DESCRIPTION = "The bash command to run. Relative path is preferred in the command.";
+export const BASH_COMMAND_DESCRIPTION =
+	"The bash command to run. Relative path is preferred in the command.";
 
 export const EDITOR_COMMAND_DESCRIPTION =
 	"The commands to run. Allowed options are: `view`, `create`, `str_replace`, `insert`.";
 
-export const EDITOR_PATH_DESCRIPTION = "Absolute path to file or directory, e.g. `/repo/file.py` or `/repo`.";
+export const EDITOR_PATH_DESCRIPTION =
+	"Absolute path to file or directory, e.g. `/repo/file.py` or `/repo`.";
 
 export const EDITOR_FILE_TEXT_DESCRIPTION =
 	"Required parameter of `create` command, with the content of the file to be created.";
@@ -53,7 +55,12 @@ export const EDITOR_OLD_STR_DESCRIPTION =
 export const EDITOR_VIEW_RANGE_DESCRIPTION =
 	"Optional parameter of `view` command when `path` points to a file. If none is given, the full file is shown. If provided, the file will be shown in the indicated line number range, e.g. [11, 12] will show lines 11 and 12. Indexing at 1 to start. Setting `[start_line, -1]` shows all lines from `start_line` to the end of the file.";
 
-export const EDITOR_COMMANDS = ["view", "create", "str_replace", "insert"] as const;
+export const EDITOR_COMMANDS = [
+	"view",
+	"create",
+	"str_replace",
+	"insert",
+] as const;
 export type EditorCommand = (typeof EDITOR_COMMANDS)[number];
 
 /** Compiled dsh implicit-parameter JSON Schema for persistent `bash`. */
@@ -116,16 +123,23 @@ export const DSH_MINIMAL_TOOLS: readonly DshToolSchema[] = [
 	{
 		name: "bash",
 		description: MINIMAL_BASH_DESCRIPTION,
-		parameters: structuredClone(DSH_BASH_PARAMETERS) as unknown as Record<string, unknown>,
+		parameters: structuredClone(DSH_BASH_PARAMETERS) as unknown as Record<
+			string,
+			unknown
+		>,
 	},
 	{
 		name: "str_replace_editor",
 		description: STR_REPLACE_EDITOR_DESCRIPTION,
-		parameters: structuredClone(DSH_STR_REPLACE_EDITOR_PARAMETERS) as unknown as Record<string, unknown>,
+		parameters: structuredClone(
+			DSH_STR_REPLACE_EDITOR_PARAMETERS,
+		) as unknown as Record<string, unknown>,
 	},
 ];
 
-export const DSH_MINIMAL_TOOL_NAMES = DSH_MINIMAL_TOOLS.map((tool) => tool.name);
+export const DSH_MINIMAL_TOOL_NAMES = DSH_MINIMAL_TOOLS.map(
+	(tool) => tool.name,
+);
 
 export const TRUNCATED_MESSAGE =
 	"<response clipped><NOTE>To save on context only part of this file has been shown to you. You should retry this tool after you have searched inside the file with `grep -n` in order to find the line numbers of what you are looking for.</NOTE>";

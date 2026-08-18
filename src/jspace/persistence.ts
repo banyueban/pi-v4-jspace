@@ -30,7 +30,10 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 /** Persist one state event; failures are logged, never thrown. */
-export function persistV4JSpaceState(pi: ExtensionAPI, entry: V4JSpaceStateEntry): void {
+export function persistV4JSpaceState(
+	pi: ExtensionAPI,
+	entry: V4JSpaceStateEntry,
+): void {
 	try {
 		pi.appendEntry(V4JSPACE_STATE_ENTRY, entry);
 	} catch (error) {
@@ -44,15 +47,30 @@ export function persistV4JSpaceState(pi: ExtensionAPI, entry: V4JSpaceStateEntry
  * Used at session_start (startup / reload / resume / fork) to restore the
  * activation watermark without re-activating J-Space (AC-011).
  */
-export function restoreV4JSpaceState(entries: readonly { type?: string; customType?: string; data?: unknown }[]): RestoredJSpaceState {
+export function restoreV4JSpaceState(
+	entries: readonly { type?: string; customType?: string; data?: unknown }[],
+): RestoredJSpaceState {
 	let found: V4JSpaceStateEntry | undefined;
 	for (const entry of entries) {
-		if (!entry || entry.type !== "custom" || entry.customType !== V4JSPACE_STATE_ENTRY) continue;
+		if (
+			!entry ||
+			entry.type !== "custom" ||
+			entry.customType !== V4JSPACE_STATE_ENTRY
+		)
+			continue;
 		if (!isObject(entry.data)) continue;
 		if (entry.data.version !== 1) continue;
-		const compactionSeq = typeof entry.data.compactionSeq === "number" ? entry.data.compactionSeq : -1;
-		const event = typeof entry.data.event === "string" ? (entry.data.event as V4JSpaceStateEvent) : undefined;
-		if (event === "activated" || event === "compacted" || event === "manual-reanchor") {
+		const compactionSeq =
+			typeof entry.data.compactionSeq === "number" ? entry.data.compactionSeq : -1;
+		const event =
+			typeof entry.data.event === "string"
+				? (entry.data.event as V4JSpaceStateEvent)
+				: undefined;
+		if (
+			event === "activated" ||
+			event === "compacted" ||
+			event === "manual-reanchor"
+		) {
 			found = { version: 1, compactionSeq, event, timestamp: 0 };
 		}
 	}

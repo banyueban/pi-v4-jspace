@@ -27,10 +27,10 @@ export function emptySessionPhase(): SessionPhase {
 }
 
 export interface AdapterState {
-enabled: boolean;
-cwd: string;
-previousToolNames?: string[];
-config: V4JSpaceConfig;
+	enabled: boolean;
+	cwd: string;
+	previousToolNames?: string[];
+	config: V4JSpaceConfig;
 	shell: PersistentBashSession;
 	bashOverrideInstalled: boolean;
 	surface: ToolSurface;
