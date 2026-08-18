@@ -8,6 +8,7 @@ import { syncAdapter } from "../anchor/activation";
 import { persistV4JSpaceState } from "../jspace/persistence";
 import { applyStatus } from "../status";
 import { describeModel } from "../model";
+import { formatDoctor, runDoctor } from "./doctor";
 
 const V4J_USAGE =
 	"Usage: /v4j, /v4j status, /v4j on, /v4j off, /v4j reanchor, /v4j doctor, /v4j dump on|off";
@@ -102,6 +103,11 @@ export function registerV4JCommand(pi: ExtensionAPI, runtime: RuntimeState): voi
 				});
 				applyStatus(ctx, runtime);
 				ctx.ui.notify("pi-v4-jspace re-anchored: next tool call promotes and re-activates J-Space", "info");
+				return;
+			}
+
+			if (head === "doctor") {
+				ctx.ui.notify(formatDoctor(runDoctor(pi, runtime)), "info");
 				return;
 			}
 

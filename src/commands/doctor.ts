@@ -9,7 +9,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
-import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import type { RuntimeState } from "../state";
 import { discoverJSpaceSkill } from "../jspace/discovery";
 import { STR_REPLACE_EDITOR_TOOL_NAME } from "../anchor/tool-set";
@@ -149,13 +149,4 @@ export function formatDoctor(result: DoctorResult): string {
 		if (result.verifySuite.output) lines.push(result.verifySuite.output.slice(0, 2000));
 	}
 	return lines.join("\n");
-}
-
-export function registerDoctorCommand(pi: ExtensionAPI, runtime: RuntimeState): void {
-	pi.registerCommand("v4j-doctor", {
-		description: "pi-v4-jspace diagnostic report",
-		handler: async (_args, ctx: ExtensionCommandContext) => {
-			ctx.ui.notify(formatDoctor(runDoctor(pi, runtime)), "info");
-		},
-	});
 }

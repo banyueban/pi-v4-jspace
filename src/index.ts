@@ -26,7 +26,6 @@ import { discoverJSpaceSkill } from "./jspace/discovery";
 import { queueJSpaceActivation, cancelPendingActivation } from "./jspace/manager";
 import { persistV4JSpaceState, restoreV4JSpaceState } from "./jspace/persistence";
 import { registerV4JCommand } from "./commands/command";
-import { registerDoctorCommand } from "./commands/doctor";
 import { appendRequestDump, resolveDumpPath } from "./diagnostics/request-dump";
 
 function sessionEntries(ctx: ExtensionContext) {
@@ -108,7 +107,6 @@ export default function v4JSpace(pi: ExtensionAPI) {
 	// Anchor 工具注册（str_replace_editor 始终注册；只有 bootstrap 阶段才激活）
 	registerStrReplaceEditorTool(pi);
 	registerV4JCommand(pi, runtime);
-	registerDoctorCommand(pi, runtime);
 
 	pi.on("session_start", async (_event, ctx) => {
 		runtime.cwd = ctx.cwd;
